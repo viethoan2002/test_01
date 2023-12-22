@@ -7,6 +7,8 @@ using UnityEngine;
 public class InputHandle : MonoBehaviour
 {
     public static InputHandle Instance;
+    private PlayerControls playerControls;
+
     public float horizontal;
     public float vertical;
 
@@ -18,11 +20,22 @@ public class InputHandle : MonoBehaviour
         if (InputHandle.Instance == null)
         {
             InputHandle.Instance = this;
+            playerControls = new PlayerControls();
         }
         else
         {
             Destroy(this);
         }
+    }
+
+    private void OnEnable()
+    {
+        playerControls.Enable();
+    }
+
+    private void OnDisable()
+    {
+        playerControls.Disable();
     }
 
     private void Update()
@@ -33,16 +46,19 @@ public class InputHandle : MonoBehaviour
 
     private void JumpInput()
     {
-        if (Input.GetKeyDown(KeyCode.W))
-        {
-            Debug.Log("w");
-            Jump = true;
-        }
+        playerControls.PlayerMovement.Jump.performed += InputAction => Jump = true;
     }
 
     private void MoveInput()
     {
-        horizontal = Input.GetAxis("Horizontal");
-        vertical = Input.GetAxis("Vertical");
+        playerControls.PlayerMovement.Left.started += InputAction => horizontal = -1;
+        playerControls.PlayerMovement.Left.canceled += InputAction => horizontal = 0;
+        playerControls.PlayerMovement.Right.started += InputAction => horizontal = 1;
+        playerControls.PlayerMovement.Right.canceled += InputAction => horizontal = 0;
+    }
+
+    public void SetHorizontal()
+    {
+        
     }
 }

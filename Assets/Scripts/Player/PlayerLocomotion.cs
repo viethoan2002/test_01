@@ -7,11 +7,15 @@ using UnityEngine.UIElements;
 public class PlayerLocomotion : MonoBehaviour
 {
     public Rigidbody2D rb;
-    public PlayerAnimatorCtrl playerAnimatorCtrl;
+    public PlayerComponent player;
 
     public float speed;
     public float jumpForce;
+
+    public bool canMove;
     public bool isGround;
+    public bool canDBJump;
+    public bool isFlip;
 
     public Transform groundChecck;
     public Vector2 rectangle;
@@ -25,6 +29,9 @@ public class PlayerLocomotion : MonoBehaviour
 
     private void Update()
     {
+        if(!canMove)
+            return;
+
         HandleLocomotion();
         HandleJump();
     }
@@ -40,20 +47,45 @@ public class PlayerLocomotion : MonoBehaviour
         
         if (InputHandle.Instance.Jump && isGround)
         {
+            player.playerAnimatorCtrl.PlayerTargetAnimation("Jump");
             rb.velocity = new Vector2(rb.velocity.x, jumpForce);
+            canDBJump = true;
         }
+        //else if(InputHandle.Instance.Jump && canDBJump)
+        //{
+        //    player.playerAnimatorCtrl.PlayerTargetAnimation("DB_Jump");
+        //    rb.velocity = new Vector2(rb.velocity.x, jumpForce);
+        //    canDBJump = false;
+        //}
     }
 
     private void HandleLocomotion()
     {
+        if (InputHandle.Instance.horizontal > 0)
+        {
+            transform.rotation=Quaternion.Euler(0,0,0);
+            isFlip = false;
+        }else if(InputHandle.Instance.horizontal < 0)
+        {
+            transform.rotation = Quaternion.Euler(0, 180, 0);
+            isFlip = true;
+        }
+
         Vector2 velocity = new Vector2(InputHandle.Instance.horizontal * speed, rb.velocity.y);
         rb.velocity = velocity;
 
-        playerAnimatorCtrl.UpdateValueAnimation();
+        player.playerAnimatorCtrl.UpdateValueAnimation(isGround);
     }
 
     private void LateUpdate()
     {
         InputHandle.Instance.Jump = false;
+    }
+
+    public void Up()
+    {
+        player.playerAnimatorCtrl.PlayerTargetAnimation("Jump");
+        rb.velocity = new Vector2(rb.velocity.x, jumpForce * 0.75f);
+
     }
 }
